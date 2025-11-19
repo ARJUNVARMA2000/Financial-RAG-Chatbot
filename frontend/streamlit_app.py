@@ -1,12 +1,20 @@
 from __future__ import annotations
 
 import os
+from urllib.parse import urljoin
 
 import requests
 import streamlit as st
 
 
 API_BASE = os.environ.get("FIN_RAG_API_BASE", "http://localhost:8000")
+
+
+def _resolve_url(path_or_url: str) -> str:
+    if path_or_url.startswith(("http://", "https://")):
+        return path_or_url
+    base = API_BASE.rstrip("/") + "/"
+    return urljoin(base, path_or_url.lstrip("/"))
 
 
 def main() -> None:
@@ -38,20 +46,20 @@ def main() -> None:
         citations = data.get("citations", [])
         if citations:
             st.subheader("Citations")
-            for idx, c in enumerate(citations, start=1):
-                label = f"[{idx}] {c.get('ticker','')} {c.get('filing_type','')} {c.get('period','')}"
+            for idx, citation in enumerate(citations, start=1):
+                label = f"[{idx}] {citation.get('ticker','')} {citation.get('filing_type','')} {citation.get('period','')}"
                 st.markdown(f"**{label}**")
                 st.write(
-                    f"Doc ID: {c.get('doc_id','')} | Page: {c.get('page','?')} | "
-                    f"Lines: {c.get('line_start','?')}–{c.get('line_end','?')}"
+                    f"Doc ID: {citation.get('doc_id','')} | Page: {citation.get('page','?')} | "
+                    f"Lines: {citation.get('line_start','?')} - {citation.get('line_end','?')}"
                 )
-                url = c.get("source_url")
-                if url:
-                    st.markdown(f"[Open source document]({url})")
+                highlight_url = citation.get("highlight_url")
+                if highlight_url:
+                    st.link_button("Open highlighted PDF", _resolve_url(highlight_url), type="primary")
+                source_url = citation.get("source_url")
+                if source_url:
+                    st.markdown(f"[Open source document]({source_url})")
 
 
 if __name__ == "__main__":
     main()
-
-
-

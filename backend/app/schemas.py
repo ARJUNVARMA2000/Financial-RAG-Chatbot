@@ -15,6 +15,8 @@ class Citation(BaseModel):
     line_end: Optional[int] = None
     table_id: Optional[str] = None
     source_url: Optional[str] = None
+    chunk_id: Optional[str] = None
+    highlight_url: Optional[str] = None
 
 
 class ChatRequest(BaseModel):

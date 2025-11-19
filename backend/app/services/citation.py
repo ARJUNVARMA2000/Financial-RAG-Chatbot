@@ -1,9 +1,27 @@
 from __future__ import annotations
 
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from ...ingestion.metadata_schema import Chunk
 from ..schemas import Citation
+from .highlight import append_pdf_fragment, build_search_phrase
+
+
+def _build_highlight_url(chunk: Chunk) -> Optional[str]:
+    meta: Dict[str, Any] = chunk.metadata
+    doc_id = str(meta.get("doc_id") or "")
+    chunk_id = str(meta.get("chunk_id") or "")
+    page = meta.get("page_start")
+    search_phrase = build_search_phrase(chunk.text)
+    local_path = str(meta.get("local_path") or "")
+    if local_path and doc_id and chunk_id:
+        return f"/documents/{doc_id}/chunks/{chunk_id}/viewer"
+    source_url = str(meta.get("source_url") or "")
+    if source_url:
+        if source_url.lower().endswith(".pdf"):
+            return append_pdf_fragment(source_url, page, search_phrase)
+        return source_url
+    return None
 
 
 def build_citations(chunks: List[Chunk]) -> List[Citation]:
@@ -23,6 +41,8 @@ def build_citations(chunks: List[Chunk]) -> List[Citation]:
                 line_end=meta.get("line_end"),
                 table_id=str(meta.get("table_id") or "") or None,
                 source_url=str(meta.get("source_url") or "") or None,
+                chunk_id=str(meta.get("chunk_id") or "") or None,
+                highlight_url=_build_highlight_url(ch),
             )
         )
     return citations

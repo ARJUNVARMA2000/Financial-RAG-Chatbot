@@ -56,5 +56,24 @@ class ChromaVectorStore:
             chunks.append((chunk, float(dist)))
         return chunks
 
+    def get_chunk(self, chunk_id: str) -> Optional[Chunk]:
+        if not chunk_id:
+            return None
+        result = self._collection.get(ids=[chunk_id])
+        ids = result.get("ids") or []
+        if not ids:
+            return None
+        documents = result.get("documents") or []
+        metadatas = result.get("metadatas") or []
+        if not documents or not metadatas:
+            return None
+        text = documents[0]
+        metadata = metadatas[0]
+        return Chunk(
+            chunk_id=chunk_id,
+            text=text,
+            metadata=metadata,
+        )
+
 
 

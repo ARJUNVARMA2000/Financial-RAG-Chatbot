@@ -49,11 +49,13 @@ def chunk_document(
             "filing_type": document.metadata.filing_type,
             "period": document.metadata.period,
             "source_url": document.metadata.source_url or "",
+            "title": document.metadata.title or "",
             "block_ids": ",".join(block_ids),  # Convert list to comma-separated string for ChromaDB
             "page_start": min(pages) if pages else None,
             "page_end": max(pages) if pages else None,
             "line_start": line_start,
             "line_end": line_end,
+            "local_path": str(document.metadata.local_path) if document.metadata.local_path else "",
         }
         chunk = Chunk(
             chunk_id=f"{document.metadata.doc_id}_chunk_{idx}",

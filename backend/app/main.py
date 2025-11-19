@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from .routes import chat, health
+from .routes import chat, documents, health
 
 app = FastAPI(
     title="Financial RAG Chatbot",
@@ -16,5 +16,6 @@ def root() -> dict:
 
 app.include_router(health.router, prefix="/health", tags=["health"])
 app.include_router(chat.router, prefix="/chat", tags=["chat"])
+app.include_router(documents.router, tags=["documents"])
 
 
