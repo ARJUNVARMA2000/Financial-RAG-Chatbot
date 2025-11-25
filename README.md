@@ -10,12 +10,13 @@ An intelligent LLM-powered chatbot that answers questions about company financia
 
 ## ✨ Features
 
+- 🎨 **Futuristic UI** — Minimalist, dark-themed chat interface with "glassmorphism" design
+- 🧠 **Smart Query Parsing** — Automatically detects tickers and time periods from your questions
 - 🔍 **Semantic Search** — Retrieves relevant chunks from financial documents using vector embeddings
 - 📄 **Multi-Document Support** — Handles PDFs, HTML filings, and transcripts
 - 🏷️ **Line-Level Citations** — Every answer includes precise source references
 - 🤖 **Multi-Model Support** — Evaluate responses across Claude, GPT, Gemini, Llama, and more
 - 📊 **Built-in Evaluation Pipeline** — Compare model accuracy with Claude Opus as judge
-- 🎨 **Streamlit UI** — Beautiful chat interface for interactive queries
 
 ---
 
@@ -25,14 +26,14 @@ An intelligent LLM-powered chatbot that answers questions about company financia
 ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
 │   Streamlit UI  │────▶│   FastAPI API   │────▶│   RAG Service   │
 └─────────────────┘     └─────────────────┘     └─────────────────┘
-                                                        │
-                        ┌───────────────────────────────┼───────────────────────────────┐
-                        │                               │                               │
-                        ▼                               ▼                               ▼
-               ┌─────────────────┐             ┌─────────────────┐             ┌─────────────────┐
-               │  Query Parser   │             │    Retriever    │             │  LLM Generator  │
-               │  (Intent/Dates) │             │  (ChromaDB)     │             │  (OpenAI/Router)│
-               └─────────────────┘             └─────────────────┘             └─────────────────┘
+                                                    │
+                    ┌───────────────────────────────┼───────────────────────────────┐
+                    │                               │                               │
+                    ▼                               ▼                               ▼
+           ┌─────────────────┐             ┌─────────────────┐             ┌─────────────────┐
+           │  Query Parser   │             │    Retriever    │             │  LLM Generator  │
+           │  (Intent/Dates) │             │  (ChromaDB)     │             │  (OpenAI/Router)│
+           └─────────────────┘             └─────────────────┘             └─────────────────┘
 ```
 
 ---
@@ -46,7 +47,7 @@ An intelligent LLM-powered chatbot that answers questions about company financia
 | **Embeddings** | OpenAI `text-embedding-3-large` |
 | **LLM** | OpenAI GPT-4.1-mini (default), OpenRouter for multi-model |
 | **Document Parsing** | pdfplumber, BeautifulSoup4 |
-| **Frontend** | Streamlit |
+| **Frontend** | Streamlit, Custom CSS |
 | **Evaluation** | Claude Opus 4.5 as judge |
 
 ---
