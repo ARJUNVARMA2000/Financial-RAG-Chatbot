@@ -1,0 +1,115 @@
+model,question,expected_answer,actual_answer,is_correct,input_tokens,output_tokens,cost,judge_input_tokens,judge_output_tokens,judge_cost
+claude-opus-4.5,What was Amazon's Q3 2025 revenue?,$158.9 billion,"Based on the provided context, **Amazon's Q3 2025 revenue (total net sales) was $180.2 billion**.
+
+This represents a **13% increase** compared to Q3 2024 ($158.9 billion), or **12% growth** excluding the $1.5 billion favorable impact from foreign exchange rates.
+
+**Breakdown by segment (Q3 2025):**
+- **North America:** $106.3 billion (up 11% YoY)
+- **International:** $40.9 billion (up 14% YoY, or 10% excluding FX)
+- **AWS:** $33.0 billion (up 20% YoY)",False,7265,160,0.040325,396,5,0.002105
+claude-sonnet-4.5,What was Amazon's Q3 2025 revenue?,$158.9 billion,"According to Amazon's Q3 2025 earnings release, **Amazon's Q3 2025 revenue was $180.2 billion**, representing a 13% increase compared to $158.9 billion in Q3 2024.
+
+Excluding the favorable impact of foreign exchange rates ($1.5 billion), net sales increased 12% year-over-year.
+
+The revenue breakdown by segment was:
+- **North America**: $106.3 billion (11% YoY growth)
+- **International**: $40.9 billion (14% YoY growth, or 10% excluding FX)
+- **AWS**: $33.0 billion (20% YoY growth)",False,7265,158,0.024165,394,5,0.002095
+gemini-3-pro,What was Amazon's Q3 2025 revenue?,$158.9 billion,"Based on the Amazon.com, Inc. Q3 2025 financial results, the company's revenue (net sales) for the third quarter ended September 30, 2025, was **$180.2 billion**.
+
+This represents a 13% increase compared to $158.9 billion in the third quarter of 2024.",False,8069,627,0.023662,312,5,0.0016849999999999999
+gpt-5.1,What was Amazon's Q3 2025 revenue?,$158.9 billion,"Amazon’s revenue (net sales) for Q3 2025 was **$180.2 billion** for the quarter ended September 30, 2025.",False,6640,95,0.00925,274,5,0.0014949999999999998
+gpt-5.1-codex,What was Amazon's Q3 2025 revenue?,$158.9 billion,"Amazon.com reported Q3 2025 net sales (revenue) of $180.2 billion for the quarter ended September 30, 2025. (Source: Amazon Q3 2025 Results Press Release, Chunk 2)",False,6640,121,0.010686,292,5,0.001585
+kimi-k2-thinking,What was Amazon's Q3 2025 revenue?,$158.9 billion," Amazon's Q3 2025 revenue (net sales) was **$180.2 billion**.
+
+This figure is reported in Amazon's Q3 2025 financial results press release (Chunk 2) and confirmed in the consolidated financial statements (Chunk 5), which show $180,169 million for the three months ended September 30, 2025.
+
+The revenue represents a 13% year-over-year increase compared to Q3 2024, or 12% excluding the favorable impact from foreign exchange rates.",False,6670,893,0.00510005,355,5,0.0019000000000000002
+qwen-max,What was Amazon's Q3 2025 revenue?,$158.9 billion,Amazon's Q3 2025 revenue was $180.2 billion.,False,7933,19,0.008009,256,5,0.001405
+llama-4-maverick,What was Amazon's Q3 2025 revenue?,$158.9 billion,"Amazon's Q3 2025 revenue was $180.2 billion. This is stated in the Q3 2025 Financial Results press release, where it is mentioned that ""Net sales increased 13% to $180.2 billion in the third quarter, compared with $158.9 billion in third quarter 2024.""",False,6628,68,0.0009476480000000002,311,5,0.00168
+claude-opus-4.5,What was Amazon's AWS revenue growth in Q3 2025?,AWS revenue grew 19% year-over-year,"Based on the provided context, **Amazon's AWS revenue growth in Q3 2025 was 20% year-over-year**.
+
+Specifically:
+- **AWS segment sales were $33.0 billion** in Q3 2025, compared to $27.5 billion in Q3 2024
+- Growth was **20% year-over-year** (or 20% excluding foreign exchange rate changes)
+
+As noted in the earnings release, CEO Andy Jassy highlighted that ""AWS is growing at a pace we haven't seen since 2022, re-accelerating to 20.2% YoY.""",False,8566,140,0.04633000000000001,383,5,0.00204
+claude-sonnet-4.5,What was Amazon's AWS revenue growth in Q3 2025?,AWS revenue grew 19% year-over-year,"According to Amazon's Q3 2025 earnings announcement, **AWS segment sales increased 20% year-over-year to $33.0 billion** in the third quarter ended September 30, 2025, compared to $27.5 billion in Q3 2024.
+
+Excluding the impact of foreign exchange rates, AWS net sales also grew **20% year-over-year**.
+
+This represents a re-acceleration in AWS growth, as noted by CEO Andy Jassy: ""AWS is growing at a pace we haven't seen since 2022, re-accelerating to 20.2% YoY.""",False,8566,139,0.027783000000000002,382,5,0.002035
+gemini-3-pro,What was Amazon's AWS revenue growth in Q3 2025?,AWS revenue grew 19% year-over-year,"Based on the Q3 2025 financial results for Amazon.com, Inc., **AWS segment sales increased 20% year-over-year** to **$33.0 billion**.
+
+Amazon CEO Andy Jassy noted in the announcement that AWS growth re-accelerated to **20.2%** year-over-year during the quarter.",False,9355,1125,0.03221,321,5,0.0017300000000000002
+gpt-5.1,What was Amazon's AWS revenue growth in Q3 2025?,AWS revenue grew 19% year-over-year,"In Q3 2025, Amazon Web Services (AWS) revenue was **$33.0 billion**, which represents **20% year-over-year growth** compared with Q3 2024.",False,7577,108,0.01055125,289,5,0.0015699999999999998
+gpt-5.1-codex,What was Amazon's AWS revenue growth in Q3 2025?,AWS revenue grew 19% year-over-year,"In Q3 2025, Amazon Web Services (AWS) revenue grew 20% year over year, reaching $33.0 billion compared with $27.5 billion in Q3 2024. (Source: Amazon Q3 2025 Results)",False,7577,127,0.012127500000000001,302,5,0.0016350000000000002
+kimi-k2-thinking,What was Amazon's AWS revenue growth in Q3 2025?,AWS revenue grew 19% year-over-year," Amazon's AWS revenue grew **20% year-over-year** in Q3 2025.
+
+This is confirmed across multiple sections of the Q3 2025 earnings documents:
+- The earnings announcement states ""AWS segment sales increased 20% year-over-year to $33.0 billion""
+- The segment information table shows AWS net sales of $33,006 million in Q3 2025 vs $27,452 million in Q3 2024
+- Supplemental financial data also confirms the 20% year-over-year growth rate
+
+The Q3 2025 period refers to the quarter ended September 30, 2025.",False,7607,435,0.0044454,392,5,0.002085
+qwen-max,What was Amazon's AWS revenue growth in Q3 2025?,AWS revenue grew 19% year-over-year,"Amazon's AWS revenue growth in Q3 2025 was 20% year-over-year. This can be found in Chunk 1, which states: ""AWS segment sales increased 20% year-over-year to $33.0 billion."" The same 20% growth rate is also mentioned in Chunk 7, which provides additional confirmation.",False,9170,75,0.00947,323,5,0.0017399999999999998
+llama-4-maverick,What was Amazon's AWS revenue growth in Q3 2025?,AWS revenue grew 19% year-over-year,"Amazon's AWS revenue growth in Q3 2025 was 20% year-over-year, with net sales increasing to $33.0 billion compared to $27.5 billion in Q3 2024.",False,7576,44,0.001060256,294,5,0.001595
+claude-opus-4.5,What was Amazon's operating income in Q3 2025?,$17.4 billion,"Based on the provided context, **Amazon's operating income in Q3 2025 was $17.4 billion** (specifically $17,422 million).
+
+However, there are important details to note:
+
+- This figure includes **two special charges**:
+  - **$2.5 billion** related to a legal settlement with the Federal Trade Commission
+  - **$1.8 billion** in estimated severance costs primarily related to planned role eliminations
+
+- **Excluding these charges**, operating income would have been **$21.7 billion**
+
+**By segment in Q3 2025:**
+- **North America**: $4.8 billion ($7.3 billion excluding the FTC settlement)
+- **International**: $1.2 billion
+- **AWS**: $11.4 billion
+
+This compares to $17.4 billion in Q3 2024, representing essentially flat year-over-year performance on a reported basis.",True,8427,213,0.04746,450,5,0.002375
+claude-sonnet-4.5,What was Amazon's operating income in Q3 2025?,$17.4 billion,"According to Amazon's Q3 2025 financial results, **operating income was $17.4 billion** (or $17,422 million to be precise) for the third quarter ended September 30, 2025.
+
+However, it's important to note that this figure includes two significant special charges:
+- **$2.5 billion** related to a legal settlement with the Federal Trade Commission
+- **$1.8 billion** in estimated severance costs primarily related to planned role eliminations
+
+**Without these charges, operating income would have been $21.7 billion** for Q3 2025.
+
+For comparison, operating income in Q3 2024 was also $17.4 billion, meaning the year-over-year growth was essentially flat (0%) on a reported basis, but would have been significantly higher excluding the special charges.",True,8427,188,0.028101,425,5,0.00225
+gemini-3-pro,What was Amazon's operating income in Q3 2025?,$17.4 billion,"Based on the Q3 2025 financial results, Amazon's operating income was **$17.4 billion** ($17,422 million).
+
+This figure includes two special charges totaling approximately $4.3 billion:
+*   **$2.5 billion** related to a legal settlement with the Federal Trade Commission.
+*   **$1.8 billion** in estimated severance costs primarily related to planned role eliminations.
+
+Excluding these charges, operating income would have been **$21.7 billion**.
+
+**Breakdown by Segment (Q3 2025):**
+*   **North America:** $4.8 billion ($4,789 million)
+*   **International:** $1.2 billion ($1,199 million)
+*   **AWS:** $11.4 billion ($11,434 million)
+
+**Sources:**
+*   *Chunk 1 (Segment Information table)*
+*   *Chunk 2 (Press Release text)*
+*   *Chunk 7 (Supplemental Financial Information table)*",True,9267,877,0.029057999999999997,477,5,0.00251
+gpt-5.1,What was Amazon's operating income in Q3 2025?,$17.4 billion,"Amazon’s operating income in Q3 2025 was **$17.4 billion** (specifically, **$17.422 billion** as shown in the consolidated segment information for the three months ended September 30, 2025).
+
+The company also disclosed that excluding two special charges in the quarter (a **$2.5 billion** legal settlement with the FTC and **$1.8 billion** of estimated severance costs), operating income **would have been approximately $21.7 billion**.",True,7471,176,0.01109875,349,5,0.0018700000000000001
+gpt-5.1-codex,What was Amazon's operating income in Q3 2025?,$17.4 billion,"Amazon’s operating income for the third quarter of 2025 was $17.422 billion. (Source: Amazon Q3 2025 results, Segment Information table)",True,7471,40,0.011446500000000002,278,5,0.0015149999999999999
+kimi-k2-thinking,What was Amazon's operating income in Q3 2025?,$17.4 billion,"Amazon's operating income in Q3 2025 was **$17.4 billion** (or $17,422 million).
+
+This figure is reported in multiple sections of the Q3 2025 earnings documents:
+- The Consolidated segment table shows operating income of $17,422 million for Q3 2025
+- The earnings announcement explicitly states ""Operating income was $17.4 billion in the third quarter""
+
+**Important context**: This reported operating income includes two special charges totaling $4.3 billion:
+- $2.5 billion related to a legal settlement with the Federal Trade Commission
+- $1.8 billion in estimated severance costs primarily related to planned role eliminations
+
+Without these charges, operating income would have been $21.7 billion.",True,7494,731,0.00509015,410,5,0.002175
+qwen-max,What was Amazon's operating income in Q3 2025?,$17.4 billion,"Amazon's operating income in Q3 2025 was $17.4 billion. This is consistent with the operating income reported for the same quarter in the previous year, but it includes special charges of $2.5 billion related to a legal settlement with the Federal Trade Commission and $1.8 billion in estimated severance costs. Without these charges, the operating income would have been $21.7 billion.",False,9082,87,0.00943,328,5,0.001765
+llama-4-maverick,What was Amazon's operating income in Q3 2025?,$17.4 billion,"Amazon's operating income in Q3 2025 was $17.4 billion. This is stated in the provided context: ""Operating income was $17.4 billion in the third quarter, compared with $17.4 billion in third quarter 2024."" (Chunk 2 | amzn | pdf | Q3-2025). The same information is also available in the financial statements: ""Operating income 17,411 17,422 47,390 54,998"" (Chunk 1 | amzn | pdf | Q3-2025).",True,7463,117,0.001094528,366,5,0.001955

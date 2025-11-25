@@ -9,34 +9,35 @@ from typing import Dict
 # Models available for evaluation via OpenRouter
 EVAL_MODELS: Dict[str, str] = {
     # Claude models (Anthropic)
-    "claude-sonnet": "anthropic/claude-sonnet-4-20250514",
-    "claude-opus": "anthropic/claude-opus-4-20250514",
-    # OpenAI models
-    "gpt-4o": "openai/gpt-4o",
-    "gpt-4.1": "openai/gpt-4.1",
-    "gpt-4.1-codex": "openai/codex-mini",
+    "claude-opus-4.5": "anthropic/claude-opus-4.5",
+    "claude-sonnet-4.5": "anthropic/claude-sonnet-4.5",
     # Google models
-    "gemini-pro": "google/gemini-2.5-pro-preview",
-    # Qwen models (Alibaba)
-    "qwen-plus": "qwen/qwen-plus",
-    # Other models
-    "kimi-k2": "moonshotai/kimi-k2",
+    "gemini-3-pro": "google/gemini-3-pro-preview",
+    # OpenAI models
+    "gpt-5.1": "openai/gpt-5.1",
+    "gpt-5.1-codex": "openai/gpt-5.1-codex",
+    # Moonshot AI models
+    "kimi-k2-thinking": "moonshotai/kimi-k2-thinking",
+    # Qwen models (Alibaba) - best general purpose
+    "qwen-max": "qwen/qwen-max",
+    # Meta Llama models - best open source
+    "llama-4-maverick": "meta-llama/llama-4-maverick",
 }
 
 # Judge model for evaluating answer correctness
-JUDGE_MODEL = "anthropic/claude-opus-4-20250514"
+JUDGE_MODEL = "anthropic/claude-opus-4.5"
 
 # Cost per 1M tokens (approximate, for reference - OpenRouter provides actual costs)
 # These are fallback estimates if OpenRouter doesn't return cost info
 MODEL_COSTS_PER_1M_TOKENS: Dict[str, Dict[str, float]] = {
-    "anthropic/claude-sonnet-4-20250514": {"input": 3.0, "output": 15.0},
-    "anthropic/claude-opus-4-20250514": {"input": 15.0, "output": 75.0},
-    "openai/gpt-4o": {"input": 2.5, "output": 10.0},
-    "openai/gpt-4.1": {"input": 2.0, "output": 8.0},
-    "openai/codex-mini": {"input": 1.5, "output": 6.0},
-    "google/gemini-2.5-pro-preview": {"input": 1.25, "output": 10.0},
-    "qwen/qwen-plus": {"input": 0.5, "output": 2.0},
-    "moonshotai/kimi-k2": {"input": 0.6, "output": 2.4},
+    "anthropic/claude-opus-4.5": {"input": 5.0, "output": 25.0},
+    "anthropic/claude-sonnet-4.5": {"input": 3.0, "output": 15.0},
+    "google/gemini-3-pro-preview": {"input": 2.0, "output": 12.0},
+    "openai/gpt-5.1": {"input": 1.25, "output": 10.0},
+    "openai/gpt-5.1-codex": {"input": 1.5, "output": 6.0},
+    "moonshotai/kimi-k2-thinking": {"input": 0.45, "output": 2.35},
+    "qwen/qwen-max": {"input": 1.0, "output": 4.0},
+    "meta-llama/llama-4-maverick": {"input": 0.136, "output": 0.68},
 }
 
 
