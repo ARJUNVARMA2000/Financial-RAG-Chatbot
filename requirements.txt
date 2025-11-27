@@ -13,5 +13,4 @@ pandas>=2.2.0
 streamlit>=1.36.0
 scikit-learn>=1.4.0
 tqdm>=4.66.0
-
-
+langchain_text_splitters
