@@ -233,10 +233,8 @@ Evaluate RAG performance across multiple LLMs with Claude Opus as the judge.
 | `claude-opus-4.5` | Anthropic Claude Opus 4.5 |
 | `claude-sonnet-4.5` | Anthropic Claude Sonnet 4.5 |
 | `gpt-5.1` | OpenAI GPT-5.1 |
-| `gpt-5.1-codex` | OpenAI GPT-5.1 Codex |
 | `gemini-3-pro` | Google Gemini 3 Pro |
 | `llama-4-maverick` | Meta Llama 4 Maverick |
-| `qwen-max` | Alibaba Qwen Max |
 | `kimi-k2-thinking` | Moonshot Kimi K2 |
 
 ### Run Evaluation
