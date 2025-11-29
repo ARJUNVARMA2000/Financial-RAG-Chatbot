@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends
+from ..services.llm_text_formatter import format_llm_response
 
 from ..schemas import ChatRequest, ChatResponse, ParseQueryRequest, ParseQueryResponse
 from ..services.rag_service import RAGService, get_rag_service
@@ -12,7 +13,9 @@ def chat(
     request: ChatRequest,
     rag_service: RAGService = Depends(get_rag_service),
 ) -> ChatResponse:
-    return rag_service.answer(request)
+    raw_response = rag_service.answer(request)
+    raw_response.answer = format_llm_response(raw_response.answer)
+    return raw_response
 
 
 @router.post("/parse-query", response_model=ParseQueryResponse)
