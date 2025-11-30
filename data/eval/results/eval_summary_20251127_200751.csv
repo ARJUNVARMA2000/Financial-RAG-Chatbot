@@ -1,0 +1,7 @@
+model,total_questions,correct,accuracy,total_input_tokens,total_output_tokens,total_cost,judge_input_tokens,judge_output_tokens,judge_cost
+claude-opus-4.5,18,16,88.89%,133934,2759,$0.7386,7086,90,$0.0377
+claude-sonnet-4.5,18,16,88.89%,133934,2808,$0.4439,7135,90,$0.0379
+gemini-3-pro,18,16,88.89%,148095,13531,$0.4586,6162,90,$0.0331
+gpt-5.1,18,16,88.89%,118846,2482,$0.1734,5355,90,$0.0290
+kimi-k2-thinking,18,16,88.89%,119279,9337,$0.0756,6309,90,$0.0338
+llama-4-maverick,18,14,77.78%,118630,25145,$0.0332,28509,90,$0.1448
