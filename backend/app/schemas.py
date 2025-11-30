@@ -17,6 +17,8 @@ class Citation(BaseModel):
     source_url: Optional[str] = None
     chunk_id: Optional[str] = None
     highlight_url: Optional[str] = None
+    text: Optional[str] = None  # Text preview for citation
+    relevance_score: Optional[float] = None  # Relevance score (lower = more relevant)
 
 
 class UsageInfo(BaseModel):

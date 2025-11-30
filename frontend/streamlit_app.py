@@ -406,24 +406,86 @@ def main() -> None:
 
             st.write(msg["content"])
             if "citations" in msg and msg["citations"]:
-                with st.expander(f"📚 {len(msg['citations'])} References"):
+                with st.expander(f"📚 {len(msg['citations'])} References", expanded=False):
                     for idx, citation in enumerate(msg["citations"], start=1):
-                        label = f"**[{idx}] {citation.get('ticker','')} {citation.get('period','')}** - {citation.get('filing_type','')}"
-                        st.markdown(label)
-                        st.caption(
-                            f"Doc ID: {citation.get('doc_id','')} | "
-                            f"Page: {citation.get('page','?')} | "
-                            f"Lines: {citation.get('line_start','?')} - {citation.get('line_end','?')}"
-                        )
+                        page_num = citation.get('page')
+                        line_start = citation.get('line_start')
+                        line_end = citation.get('line_end')
                         
-                        cols = st.columns([1, 1])
+                        # Format page display
+                        if page_num:
+                            page_display = f"Page {page_num}"
+                        else:
+                            page_display = "Page N/A"
+                        
+                        # Format line display
+                        if line_start and line_end:
+                            line_display = f"Lines {line_start}-{line_end}"
+                        elif line_start:
+                            line_display = f"Line {line_start}"
+                        else:
+                            line_display = "Lines N/A"
+                        
+                        ticker = citation.get('ticker', '').upper() if citation.get('ticker') else ''
+                        period = citation.get('period', '')
+                        filing_type = citation.get('filing_type', '')
+                        doc_title = citation.get('doc_title', '')
+                        relevance_score = citation.get('relevance_score')
+                        
+                        # Format relevance score
+                        relevance_display = ""
+                        if relevance_score is not None:
+                            relevance_percent = int(relevance_score * 100)
+                            # Color based on relevance: green for high, yellow for medium, gray for low
+                            if relevance_score >= 0.7:
+                                relevance_color = "#10b981"  # green
+                            elif relevance_score >= 0.5:
+                                relevance_color = "#f59e0b"  # yellow
+                            else:
+                                relevance_color = "#6b7280"  # gray
+                            relevance_display = f'<span style="background: {relevance_color}20; color: {relevance_color}; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; font-weight: 600; margin-left: 0.5rem;">{relevance_percent}% match</span>'
+                        
+                        # Create a more visually appealing citation card
+                        st.markdown(f"""
+                        <div style="
+                            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+                            border-left: 4px solid #3b82f6;
+                            padding: 1rem;
+                            border-radius: 0.5rem;
+                            margin-bottom: 1rem;
+                        ">
+                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                                <div style="flex: 1;">
+                                    <div style="display: flex; align-items: center; flex-wrap: wrap;">
+                                        <strong style="font-size: 1.1rem; color: #1e40af;">[{idx}] {ticker} {period}</strong>
+                                        {relevance_display}
+                                    </div>
+                                    <div style="font-size: 0.9rem; color: #6b7280; margin-top: 0.25rem;">
+                                        {filing_type} • {page_display} • {line_display}
+                                    </div>
+                                    {f'<div style="font-size: 0.85rem; color: #9ca3af; margin-top: 0.25rem; font-style: italic;">{doc_title}</div>' if doc_title else ''}
+                                </div>
+                            </div>
+                        </div>
+                        """, unsafe_allow_html=True)
+                        
+                        # Action buttons in columns
+                        cols = st.columns([1, 1, 1])
                         highlight_url = citation.get("highlight_url")
                         source_url = citation.get("source_url")
+                        citation_text = citation.get("text")
                         
                         if highlight_url:
-                            cols[0].link_button("View Highlight", _resolve_url(highlight_url))
+                            cols[0].link_button("🔍 View in PDF", _resolve_url(highlight_url), use_container_width=True)
                         if source_url:
-                            cols[1].markdown(f"[Source PDF]({source_url})")
+                            cols[1].link_button("📄 Source PDF", source_url, use_container_width=True)
+                        
+                        # Show text preview
+                        if citation_text:
+                            with cols[2].expander("👁️ Preview", expanded=False):
+                                preview_text = citation_text[:300]
+                                st.text(preview_text + ("..." if len(citation_text) > 300 else ""))
+                        
                         st.markdown("---")
 
     # Chat Input

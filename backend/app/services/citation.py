@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 from ...ingestion.metadata_schema import Chunk
 from ..schemas import Citation
@@ -24,10 +24,52 @@ def _build_highlight_url(chunk: Chunk) -> Optional[str]:
     return None
 
 
-def build_citations(chunks: List[Chunk]) -> List[Citation]:
+def build_citations(chunks_with_scores: List[Tuple[Chunk, float]]) -> List[Citation]:
+    """
+    Build citations from chunks with their relevance scores.
+    
+    Args:
+        chunks_with_scores: List of (Chunk, score) tuples where score is distance (lower = more relevant)
+    
+    Returns:
+        List of Citation objects ordered by relevance
+    """
     citations: List[Citation] = []
-    for ch in chunks:
+    for ch, score in chunks_with_scores:
         meta: Dict[str, Any] = ch.metadata
+        
+        # Extract page number, handling various types (int, str, None)
+        # ChromaDB may return None, 0, empty string, or actual page numbers
+        page_start = meta.get("page_start")
+        page_num = None
+        if page_start is not None and page_start != "":
+            try:
+                # Convert to int and only use if it's a valid positive page number
+                page_int = int(page_start)
+                if page_int > 0:  # Only use positive page numbers (0 means no page info)
+                    page_num = page_int
+            except (ValueError, TypeError):
+                page_num = None
+        
+        # Extract line numbers similarly
+        line_start = meta.get("line_start")
+        line_end = meta.get("line_end")
+        if line_start is not None:
+            try:
+                line_start = int(line_start) if line_start != 0 else None
+            except (ValueError, TypeError):
+                line_start = None
+        if line_end is not None:
+            try:
+                line_end = int(line_end) if line_end != 0 else None
+            except (ValueError, TypeError):
+                line_end = None
+        
+        # Convert distance to similarity score (lower distance = higher similarity)
+        # Normalize to 0-1 range where 1 is most relevant
+        # Cosine distance ranges from 0-2, so we convert: similarity = 1 - (distance / 2)
+        similarity_score = max(0.0, min(1.0, 1.0 - (score / 2.0))) if score is not None else None
+        
         citations.append(
             Citation(
                 doc_id=str(meta.get("doc_id", "")),
@@ -36,13 +78,15 @@ def build_citations(chunks: List[Chunk]) -> List[Citation]:
                 filing_type=str(meta.get("filing_type") or ""),
                 period=str(meta.get("period") or ""),
                 section=str(meta.get("section") or ""),
-                page=int(meta.get("page_start") or 0) or None,
-                line_start=meta.get("line_start"),
-                line_end=meta.get("line_end"),
+                page=page_num,
+                line_start=line_start,
+                line_end=line_end,
                 table_id=str(meta.get("table_id") or "") or None,
                 source_url=str(meta.get("source_url") or "") or None,
                 chunk_id=str(meta.get("chunk_id") or "") or None,
                 highlight_url=_build_highlight_url(ch),
+                text=ch.text[:500] if ch.text else None,  # Add text preview (first 500 chars)
+                relevance_score=similarity_score,  # Relevance score (0-1, higher = more relevant)
             )
         )
     return citations

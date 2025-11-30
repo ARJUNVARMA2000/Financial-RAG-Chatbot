@@ -18,14 +18,23 @@ SYSTEM_PROMPT = """You are a financial analysis assistant.
 You are given context from official company documents (filings, press releases, and earnings call transcripts).
 Answer the user's question using ONLY the provided context.
 If the answer cannot be found in the context, say that you do not know and suggest which documents or periods might contain it.
-Be precise with numbers and clearly state which company and period you are referring to."""
+Be precise with numbers and clearly state which company and period you are referring to.
+When referencing information from the context, include the page number(s) from the source document (e.g., "as stated on page 5" or "according to page 12-13")."""
 
 
 def _format_context(chunks_with_scores: List[Tuple[Chunk, float]]) -> str:
     parts: List[str] = []
     for idx, (chunk, _score) in enumerate(chunks_with_scores, start=1):
         meta = chunk.metadata
-        header = f"[Chunk {idx} | {meta.get('ticker','')} | {meta.get('filing_type','')} | {meta.get('period','')}]"
+        page_start = meta.get('page_start')
+        page_end = meta.get('page_end')
+        page_info = ""
+        if page_start:
+            if page_end and page_end != page_start:
+                page_info = f" | Page {page_start}-{page_end}"
+            else:
+                page_info = f" | Page {page_start}"
+        header = f"[Chunk {idx} | {meta.get('ticker','')} | {meta.get('filing_type','')} | {meta.get('period','')}{page_info}]"
         parts.append(header)
         parts.append(chunk.text)
         parts.append("")
@@ -80,8 +89,9 @@ class RAGService:
             # Use default OpenAI client
             answer_text = self._openai.chat(system_prompt=system_prompt, user_message=request.question)
 
+        chunks_with_scores = ranked  # Keep scores for citations
         chunks_only: List[Chunk] = [cw[0] for cw in ranked]
-        citations = build_citations(chunks_only)
+        citations = build_citations(chunks_with_scores)
         raw_context = [
             {
                 "text": chunk.text,
