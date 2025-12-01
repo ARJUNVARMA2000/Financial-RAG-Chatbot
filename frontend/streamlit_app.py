@@ -1,13 +1,58 @@
+
+
 from __future__ import annotations
 
 import os
 from urllib.parse import urljoin
+import sys
+from pathlib import Path
+
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
 
 import requests
 import streamlit as st
+from backend.app.services.llm_text_formatter import format_llm_response
 
 
 API_BASE = os.environ.get("FIN_RAG_API_BASE", "http://localhost:8000")
+
+def handle_question(question: str, top_k: int):
+    """
+    Process a question: parse it, search, and update session state with the answer.
+    This function handles UI feedback (status) and state updates.
+    """
+    # ... existing code ...
+    
+    try:
+        resp = requests.post(f"{API_BASE}/chat", json=payload, timeout=60)
+        resp.raise_for_status()
+        data = resp.json()
+        
+        # CRITICAL FIX: Format the answer immediately after receiving it
+        raw_answer = data.get("answer", "")
+        answer = format_llm_response(raw_answer)  # Clean the text
+        citations = data.get("citations", [])
+        
+        status.update(label="Complete!", state="complete", expanded=False)
+        
+    except Exception as exc:
+        status.update(label="Error", state="error", expanded=True)
+        answer = f"I encountered an error: {exc}"
+        citations = []
+
+    # Save formatted answer to session state
+    message_data = {
+        "role": "assistant",
+        "content": answer,  # Now properly formatted
+        "citations": citations,
+        "context_tickers": new_tickers if new_tickers else tickers_list,
+        "context_period": new_period if new_period else period_str,
+        "clarification_needed": parsed.get("needs_clarification"),
+        "clarification_msg": parsed.get("clarification_message"),
+    }
+    st.session_state.messages.append(message_data)
+    status_placeholder.empty()
 
 
 def _resolve_url(path_or_url: str) -> str:
@@ -387,7 +432,8 @@ def main() -> None:
                             </div>
                         </div>
                         """, 
-                        unsafe_allow_html=True
+                        # unsafe_allow_html=True
+                        st.write(msg["content"])
                     )
 
                 # 2. Context Chips
@@ -469,22 +515,40 @@ def main() -> None:
                         </div>
                         """, unsafe_allow_html=True)
                         
-                        # Action buttons in columns
-                        cols = st.columns([1, 1, 1])
+                        #Action buttons in columns
+                        # cols = st.columns([1, 1, 1])
+                        # highlight_url = citation.get("highlight_url")
+                        # source_url = citation.get("source_url")
+                        # citation_text = citation.get("text")
+                        
+                        # if highlight_url:
+                        #     cols[0].link_button("🔍 View in PDF", _resolve_url(highlight_url), use_container_width=True)
+                        # if source_url:
+                        #     cols[1].link_button("📄 Source PDF", source_url, use_container_width=True)
+                        
+                        # # Show text preview
+                        # if citation_text:
+                        #     with cols[2].expander("👁️ Preview", expanded=False):
+                        #         preview_text = citation_text[:300]
+                        #         st.text(preview_text + ("..." if len(citation_text) > 300 else ""))
+                        
+                        # st.markdown("---")
+
+                        cols = st.columns([1, 1])
                         highlight_url = citation.get("highlight_url")
                         source_url = citation.get("source_url")
                         citation_text = citation.get("text")
                         
                         if highlight_url:
                             cols[0].link_button("🔍 View in PDF", _resolve_url(highlight_url), use_container_width=True)
-                        if source_url:
-                            cols[1].link_button("📄 Source PDF", source_url, use_container_width=True)
+                        # if source_url:
+                        #     cols[1].link_button("📄 Source PDF", source_url, use_container_width=True)
                         
                         # Show text preview
                         if citation_text:
-                            with cols[2].expander("👁️ Preview", expanded=False):
-                                preview_text = citation_text[:300]
-                                st.text(preview_text + ("..." if len(citation_text) > 300 else ""))
+                            with cols[1].expander("👁️ Preview", expanded=False):
+                                preview_text = citation_text
+                                st.text(preview_text)
                         
                         st.markdown("---")
 
