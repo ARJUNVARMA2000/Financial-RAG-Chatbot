@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Dict
 
 from ...ingestion.metadata_schema import Chunk
 from ...vectorstore.chroma_store import ChromaVectorStore
@@ -53,13 +53,195 @@ class RAGService:
         self._openai = openai_client or get_openai_client()
         self._openrouter = openrouter_client
 
+    def get_available_periods(self, ticker: str) -> List[str]:
+        """
+        Get all available periods for a given ticker.
+        """
+        print(f"🔍 get_available_periods called with ticker={ticker}")
+        
+        try:
+            # Use vector store method if available
+            if hasattr(self._vector_store, 'get_available_periods'):
+                print(f"🔍 Using vector_store.get_available_periods()")
+                result = self._vector_store.get_available_periods(ticker)
+                print(f"🔍 vector_store returned: {result}")
+                return result
+            
+            print(f"🔍 Using fallback method with retriever")
+            # Fallback: query for this ticker and extract unique periods
+            chunks_with_scores = self._retriever.retrieve(
+                query="",  # Empty query to get all chunks
+                k=100,  # Get enough to see all periods
+                tickers=[ticker.upper()],
+                period=None,
+            )
+            
+            print(f"🔍 Retriever returned {len(chunks_with_scores)} chunks")
+            
+            periods = set()
+            for chunk, _ in chunks_with_scores:
+                if 'period' in chunk.metadata:
+                    periods.add(chunk.metadata['period'])
+                    print(f"🔍 Found period: {chunk.metadata['period']}")
+            
+            result = sorted(list(periods))
+            print(f"🔍 Final periods: {result}")
+            return result
+        except Exception as e:
+            print(f"🔍 ERROR in get_available_periods: {e}")
+            import traceback
+            traceback.print_exc()
+            return []
+
+    def get_all_available_data(self) -> Dict[str, List[str]]:
+        """
+        Get all available tickers and their periods.
+        
+        Returns:
+            Dict mapping ticker -> list of periods
+            Example: {"NVDA": ["Q1-2026", "Q2-2026"], "AMZN": ["Q3-2025"]}
+        """
+        try:
+            # Use vector store method if available
+            if hasattr(self._vector_store, 'get_ticker_period_map'):
+                return self._vector_store.get_ticker_period_map()
+            
+            # Fallback: query all and extract
+            chunks_with_scores = self._retriever.retrieve(
+                query="",  # Empty query
+                k=1000,  # Get many chunks
+                tickers=None,
+                period=None,
+            )
+            
+            ticker_periods: Dict[str, set] = {}
+            for chunk, _ in chunks_with_scores:
+                ticker = chunk.metadata.get('ticker', '').upper()
+                period = chunk.metadata.get('period', '')
+                
+                if ticker and period:
+                    if ticker not in ticker_periods:
+                        ticker_periods[ticker] = set()
+                    ticker_periods[ticker].add(period)
+            
+            # Convert sets to sorted lists
+            return {
+                ticker: sorted(list(periods))
+                for ticker, periods in ticker_periods.items()
+            }
+        except Exception as e:
+            print(f"Error getting available data: {e}")
+            return {}
+
+    def _build_availability_message(
+        self, 
+        requested_tickers: Optional[List[str]], 
+        requested_period: Optional[str]
+    ) -> str:
+        """
+        Build a helpful message about available data when no results found.
+        """
+        print(f"🔍 DEBUG: requested_tickers = {requested_tickers}")
+        print(f"🔍 DEBUG: requested_period = {requested_period}")
+        
+        if not requested_tickers:
+            # No ticker specified - show all available data
+            all_data = self.get_all_available_data()
+            
+            if not all_data:
+                return "I don't have any financial data available in my database yet."
+            
+            msg = "I don't have data for that specific query. Here's what's available:\n\n"
+            for ticker, periods in sorted(all_data.items()):
+                periods_str = ", ".join(periods)
+                msg += f"**{ticker}**: {periods_str}\n"
+            
+            msg += "\nPlease rephrase your question to specify one of the available tickers and periods."
+            return msg
+        
+        # Ticker(s) specified - check which tickers have data
+        tickers_with_data = {}
+        tickers_without_data = []
+        
+        for ticker in requested_tickers:
+            periods = self.get_available_periods(ticker)
+            print(f"🔍 DEBUG: Checking ticker={ticker}, found periods={periods}")
+            if periods:
+                tickers_with_data[ticker.upper()] = periods
+            else:
+                tickers_without_data.append(ticker.upper())
+        
+        print(f"🔍 DEBUG: tickers_with_data = {tickers_with_data}")
+        print(f"🔍 DEBUG: tickers_without_data = {tickers_without_data}")
+        
+        # Case 1: None of the requested tickers have any data
+        if not tickers_with_data:
+            print("🔍 DEBUG: Entered CASE 1 - No data for ticker")
+            ticker_str = ", ".join([t.upper() for t in requested_tickers])
+            all_data = self.get_all_available_data()
+            
+            msg = f"I don't have any data for {ticker_str}.\n\n"
+            
+            if all_data:
+                msg += "Available companies:\n"
+                for ticker, periods in sorted(all_data.items()):
+                    periods_str = ", ".join(periods)
+                    msg += f"- **{ticker}**: {periods_str}\n"
+                
+                msg += "\nPlease ask about one of the available companies."
+            else:
+                msg += "I don't have any financial data available in my database yet."
+            
+            return msg
+        
+        # Case 2: Ticker(s) exist, but wrong period or no results for query
+        print("🔍 DEBUG: Entered CASE 2 - Ticker exists, wrong period")
+        msg = ""
+        
+        if requested_period:
+            # User specified a period - show it's not available
+            ticker_str = ", ".join([t.upper() for t in requested_tickers])
+            msg += f"I don't have data for **{ticker_str}** in period **{requested_period}**.\n\n"
+            msg += "Available periods for your requested ticker(s):\n\n"
+        else:
+            # No period specified, but no results found
+            msg += "I couldn't find relevant data for your query. Here's what's available:\n\n"
+        
+        # Show available periods for tickers that DO have data
+        for ticker, periods in sorted(tickers_with_data.items()):
+            periods_str = ", ".join(periods)
+            msg += f"**{ticker}**: {periods_str}\n"
+        
+        msg += "\nPlease rephrase your question using one of the available periods."
+        
+        return msg
+
     def answer(self, request: ChatRequest) -> ChatResponse:
+        # Retrieve relevant chunks
         chunks_with_scores = self._retriever.retrieve(
             query=request.question,
             k=request.top_k,
             tickers=request.tickers,
             period=request.period,
         )
+        
+        # ✅ CHECK IF NO RESULTS FOUND
+        if not chunks_with_scores or len(chunks_with_scores) == 0:
+            # Build helpful message with available periods
+            availability_msg = self._build_availability_message(
+                requested_tickers=request.tickers,
+                requested_period=request.period
+            )
+            
+            return ChatResponse(
+                answer=availability_msg,
+                citations=[],
+                raw_context=None,
+                model=None,
+                usage=None,
+            )
+        
+        # Continue with normal RAG flow
         ranked = rerank_by_distance(chunks_with_scores)
         context = _format_context(ranked)
         system_prompt = SYSTEM_PROMPT + "\n\nContext:\n" + context
@@ -114,6 +296,4 @@ def get_rag_service() -> RAGService:
     vector_store = ChromaVectorStore(persist_directory=str(settings.chroma_persist_dir))
     openai_client = get_openai_client()
     return RAGService(vector_store=vector_store, openai_client=openai_client)
-
-
 
