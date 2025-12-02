@@ -18,8 +18,13 @@ def format_response_text(text: str) -> str:
     text = re.sub(r'(\d+\.?\d*)million', r'\1 million', text, flags=re.IGNORECASE)
     text = re.sub(r'(\d+\.?\d*)trillion', r'\1 trillion', text, flags=re.IGNORECASE)
     
-    # Step 2: Fix "17.4billion" -> "$17.4 billion" (add dollar sign if missing)
-    text = re.sub(r'(?<!\$)(\d+\.?\d*)\s+(billion|million|trillion)', r'$\1 \2', text, flags=re.IGNORECASE)
+    # Step 2: Normalize spacing around large-number units (no currency formatting here)
+    text = re.sub(
+        r'(?<!\$)(\d+\.?\d*)\s+(billion|million|trillion)',
+        r'\1 \2',
+        text,
+        flags=re.IGNORECASE,
+    )
     
     # Step 3: Fix missing spaces after periods (but not decimals)
     text = re.sub(r'([a-z])\.([A-Z])', r'\1. \2', text)
@@ -102,8 +107,7 @@ def format_llm_response(raw_response: str) -> str:
     # Apply formatting
     formatted = format_response_text(text)
     
-    # Financial number formatting
-    formatted = re.sub(r'\$\s+(\d)', r'$\1', formatted)
+    # Final financial number spacing cleanup
     formatted = re.sub(r'(\d+\.?\d*)\s*billion', r'\1 billion', formatted, flags=re.IGNORECASE)
     formatted = re.sub(r'(\d+\.?\d*)\s*million', r'\1 million', formatted, flags=re.IGNORECASE)
     
