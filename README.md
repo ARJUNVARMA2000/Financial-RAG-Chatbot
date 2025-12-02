@@ -126,7 +126,7 @@ data/raw/
 Build the vector index:
 
 ```bash
-python scripts/build_index.py --ticker AMZN --period Q3-2025
+python scripts/build_index.py --all
 ```
 
 ### 4. Start the API Server
@@ -168,6 +168,66 @@ The UI will open at `http://localhost:8501`
 | **Port already in use** | Stop other services using ports 8000 or 8501, or change ports in commands |
 
 For detailed setup instructions, see [SETUP_GUIDE.md](SETUP_GUIDE.md).
+
+---
+
+## 🚂 Railway Deployment (FastAPI + Streamlit)
+
+### 1. Deploy backend and frontend services
+
+- **Connect repo to Railway**
+  - Push this repo to GitHub.
+  - In Railway, create a new project → **Deploy from GitHub repo**.
+
+- **Backend service**
+  - Build command: `pip install -r requirements.txt`
+  - Start command: `uvicorn backend.app.main:app --host 0.0.0.0 --port $PORT`
+  - Add environment variables (in the backend service):
+    - `OPENAI_API_KEY`, `OPENAI_BASE_URL` (optional)
+    - `OPENAI_CHAT_MODEL`, `OPENAI_EMBEDDING_MODEL`
+    - `OPENROUTER_API_KEY`, `OPENROUTER_BASE_URL` (optional)
+    - `FRONTEND_URL` (set after frontend is deployed)
+  - Attach a **volume** to the backend:
+    - Mount path: `/app/data`
+    - This is where `data/indexes/chroma` (the Chroma database) is stored.
+
+- **Frontend service**
+  - Create a second service in the same Railway project pointing to the same repo.
+  - Build command: `pip install -r requirements.txt`
+  - Start command: `streamlit run frontend/streamlit_app.py --server.port $PORT --server.address 0.0.0.0`
+  - Environment variables:
+    - `FIN_RAG_API_BASE=https://<your-backend>.up.railway.app`
+
+### 2. Load the pre-built Chroma index on Railway
+
+The repository includes a pre-built Chroma index in `chroma_index.zip` so you do **not** need to upload PDFs or rebuild the index in production.
+
+1. Open an SSH shell into the backend service (from your own machine):
+
+   ```bash
+   railway ssh --service <backend-service-name>
+   ```
+
+2. Inside the Railway shell:
+
+   ```bash
+   cd /app
+   mkdir -p data/indexes
+   python -c "import zipfile; z = zipfile.ZipFile('chroma_index.zip'); z.extractall('data/indexes')"
+   python scripts/debug_index.py
+   ```
+
+   - `debug_index.py` should show a **non-zero** `Total chunks in collection` (≈4911) and sample chunks for tickers like `AMZN` and period `Q3-2025`.
+   - The index is stored under `/app/data/indexes/chroma` on the attached volume and will persist across restarts and redeploys.
+
+### 3. Verify the deployed app
+
+- **Backend health:** `https://<your-backend>.up.railway.app/health`
+- **API docs:** `https://<your-backend>.up.railway.app/docs`
+- **Frontend UI:** `https://<your-frontend>.up.railway.app` → ask something like:
+  - “What were Amazon’s total net sales in Q3 2025?”
+
+For a more detailed, step-by-step Railway guide (including alternative ways to build the index on Railway), see `DEPLOYMENT.md`.
 
 ---
 
