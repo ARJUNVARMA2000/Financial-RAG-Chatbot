@@ -17,23 +17,20 @@ def format_response_text(text: str) -> str:
     text = re.sub(r'(\d+\.?\d*)billion', r'\1 billion', text, flags=re.IGNORECASE)
     text = re.sub(r'(\d+\.?\d*)million', r'\1 million', text, flags=re.IGNORECASE)
     text = re.sub(r'(\d+\.?\d*)trillion', r'\1 trillion', text, flags=re.IGNORECASE)
-    
-    # Step 2: Fix "17.4billion" -> "$17.4 billion" (add dollar sign if missing)
-    text = re.sub(r'(?<!\$)(\d+\.?\d*)\s+(billion|million|trillion)', r'$\1 \2', text, flags=re.IGNORECASE)
-    
-    # Step 3: Fix missing spaces after periods (but not decimals)
+
+    # Step 2: Fix missing spaces after periods (but not decimals)
     text = re.sub(r'([a-z])\.([A-Z])', r'\1. \2', text)
     
-    # Step 4: Fix missing spaces after punctuation
+    # Step 3: Fix missing spaces after punctuation
     text = re.sub(r'([.!?,;:])([A-Za-z0-9])', r'\1 \2', text)
     
-    # Step 5: Fix camelCase issues
+    # Step 4: Fix camelCase issues
     text = re.sub(r'([a-z])([A-Z])', r'\1 \2', text)
     
-    # Step 6: Fix missing spaces after numbers followed by letters
+    # Step 5: Fix missing spaces after numbers followed by letters
     text = re.sub(r'(\d)([A-Za-z])', r'\1 \2', text)
     
-    # Step 7: Fix common word boundaries
+    # Step 6: Fix common word boundaries
     word_boundaries = [
         (r'billionrelated', 'billion related'),
         (r'billionin', 'billion in'),
@@ -54,18 +51,18 @@ def format_response_text(text: str) -> str:
     for pattern, replacement in word_boundaries:
         text = re.sub(pattern, replacement, text, flags=re.IGNORECASE)
     
-    # Step 8-10: Fix brackets and uppercase
+    # Step 7-9: Fix brackets and uppercase
     text = re.sub(r'([a-z0-9])(\()', r'\1 \2', text)
     text = re.sub(r'(\))([A-Za-z0-9])', r'\1 \2', text)
     text = re.sub(r'([A-Z]{2,})([a-z])', r'\1 \2', text)
     
-    # Step 11: Replace multiple spaces with single space
+    # Step 10: Replace multiple spaces with single space
     text = re.sub(r' +', ' ', text)
     
-    # Step 12: Fix weird spacing around decimals
+    # Step 11: Fix weird spacing around decimals
     text = re.sub(r'(\d+)\.\s+(\d+)', r'\1.\2', text)
     
-    # Step 13-14: Clean up newlines
+    # Step 12-13: Clean up newlines
     text = re.sub(r'\n +', '\n', text)
     text = re.sub(r' +\n', '\n', text)
     text = re.sub(r'\n{3,}', '\n\n', text)
@@ -120,11 +117,6 @@ def format_llm_response(raw_response: str) -> str:
     
     # Apply spacing / punctuation formatting
     formatted = format_response_text(text)
-    
-    # Financial number formatting
-    formatted = re.sub(r'\$\s+(\d)', r'$\1', formatted)
-    formatted = re.sub(r'(\d+\.?\d*)\s*billion', r'\1 billion', formatted, flags=re.IGNORECASE)
-    formatted = re.sub(r'(\d+\.?\d*)\s*million', r'\1 million', formatted, flags=re.IGNORECASE)
 
     # Escape $ so Streamlit Markdown doesn't enter math mode (which changes digit font)
     # Example: "$21.2 billion" -> "\$21.2 billion" for consistent rendering.
