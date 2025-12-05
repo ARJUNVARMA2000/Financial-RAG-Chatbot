@@ -19,6 +19,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 from typing import List, Optional
+import time
 
 import requests
 from tqdm import tqdm
@@ -56,6 +57,7 @@ class ModelResult:
     judge_input_tokens: int = 0
     judge_output_tokens: int = 0
     judge_cost: float = 0.0
+    latency_ms: float = 0.0
 
 
 @dataclass
@@ -71,6 +73,7 @@ class ModelSummary:
     judge_input_tokens: int = 0
     judge_output_tokens: int = 0
     judge_cost: float = 0.0
+    total_latency_ms: float = 0.0
 
 
 @dataclass
@@ -147,6 +150,7 @@ def run_evaluation(
                 pbar.set_description(f"Eval: {model_name[:20]}")
 
                 try:
+                    start_ts = time.perf_counter()
                     # Get model response via RAG API
                     response = call_rag_api(
                         question=q.question,
@@ -154,6 +158,7 @@ def run_evaluation(
                         period=q.period,
                         model=model_name,
                     )
+                    latency_ms = (time.perf_counter() - start_ts) * 1000
 
                     actual_answer = response.get("answer", "")
                     usage = response.get("usage", {}) or {}
@@ -180,6 +185,7 @@ def run_evaluation(
                         judge_input_tokens=judgment.input_tokens,
                         judge_output_tokens=judgment.output_tokens,
                         judge_cost=judgment.cost,
+                        latency_ms=latency_ms,
                     )
                     results.results.append(result)
 
@@ -194,6 +200,7 @@ def run_evaluation(
                     summary.judge_input_tokens += judgment.input_tokens
                     summary.judge_output_tokens += judgment.output_tokens
                     summary.judge_cost += judgment.cost
+                    summary.total_latency_ms += latency_ms
 
                 except Exception as e:
                     print(f"\nError evaluating {model_name} on question: {q.question[:50]}...")
@@ -208,6 +215,7 @@ def run_evaluation(
                         input_tokens=0,
                         output_tokens=0,
                         cost=0.0,
+                        latency_ms=0.0,
                     )
                     results.results.append(result)
                     model_summaries[model_name].total_questions += 1
@@ -237,13 +245,13 @@ def save_results(results: EvalResults, output_dir: str) -> tuple[str, str]:
         writer.writerow([
             "model", "question", "expected_answer", "actual_answer", "is_correct",
             "input_tokens", "output_tokens", "cost",
-            "judge_input_tokens", "judge_output_tokens", "judge_cost"
+            "judge_input_tokens", "judge_output_tokens", "judge_cost", "latency_ms"
         ])
         for r in results.results:
             writer.writerow([
                 r.model, r.question, r.expected_answer, r.actual_answer, r.is_correct,
                 r.input_tokens, r.output_tokens, r.cost,
-                r.judge_input_tokens, r.judge_output_tokens, r.judge_cost
+                r.judge_input_tokens, r.judge_output_tokens, r.judge_cost, f"{r.latency_ms:.1f}"
             ])
 
     # Save summary results CSV
@@ -253,13 +261,15 @@ def save_results(results: EvalResults, output_dir: str) -> tuple[str, str]:
         writer.writerow([
             "model", "total_questions", "correct", "accuracy",
             "total_input_tokens", "total_output_tokens", "total_cost",
-            "judge_input_tokens", "judge_output_tokens", "judge_cost"
+            "judge_input_tokens", "judge_output_tokens", "judge_cost", "avg_latency_ms"
         ])
         for s in results.summaries:
+            avg_latency = (s.total_latency_ms / s.total_questions) if s.total_questions else 0.0
             writer.writerow([
                 s.model, s.total_questions, s.correct, f"{s.accuracy:.2%}",
                 s.total_input_tokens, s.total_output_tokens, f"${s.total_cost:.4f}",
-                s.judge_input_tokens, s.judge_output_tokens, f"${s.judge_cost:.4f}"
+                s.judge_input_tokens, s.judge_output_tokens, f"${s.judge_cost:.4f}",
+                f"{avg_latency:.1f}"
             ])
 
     return str(detailed_path), str(summary_path)
@@ -277,15 +287,16 @@ def print_summary(results: EvalResults) -> None:
 
     # Table header
     print(f"{'Model':<25} {'Questions':>10} {'Correct':>10} {'Accuracy':>10} "
-          f"{'In Tokens':>12} {'Out Tokens':>12} {'Cost':>10}")
+          f"{'In Tokens':>12} {'Out Tokens':>12} {'Cost':>10} {'Avg ms':>10}")
     print("-" * 100)
 
     # Sort by accuracy descending
     sorted_summaries = sorted(results.summaries, key=lambda x: x.accuracy, reverse=True)
 
     for s in sorted_summaries:
+        avg_latency = (s.total_latency_ms / s.total_questions) if s.total_questions else 0.0
         print(f"{s.model:<25} {s.total_questions:>10} {s.correct:>10} {s.accuracy:>9.1%} "
-              f"{s.total_input_tokens:>12,} {s.total_output_tokens:>12,} ${s.total_cost:>9.4f}")
+              f"{s.total_input_tokens:>12,} {s.total_output_tokens:>12,} ${s.total_cost:>9.4f} {avg_latency:>9.1f}")
 
     print("=" * 100)
 
@@ -321,6 +332,12 @@ def main() -> None:
         default="http://localhost:8000",
         help="Base URL for the RAG API",
     )
+    parser.add_argument(
+        "--limit",
+        type=int,
+        default=0,
+        help="Optional limit of questions to run for a quick regression (0 = all)",
+    )
 
     args = parser.parse_args()
 
@@ -342,6 +359,8 @@ def main() -> None:
 
     print(f"Loading questions from: {args.csv}")
     questions = load_questions_from_csv(args.csv)
+    if args.limit and args.limit > 0:
+        questions = questions[: args.limit]
     print(f"Loaded {len(questions)} questions")
 
     print(f"Models to evaluate: {', '.join(models)}")

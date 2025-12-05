@@ -57,6 +57,45 @@ def _resolve_relative_period(period: Optional[str]) -> Optional[str]:
     return period
 
 
+_PERIOD_REGEX = re.compile(r"q([1-4])[-\s]?(\d{4})", re.IGNORECASE)
+_TICKER_REGEX = re.compile(r"\b([A-Z]{1,5})(?=\b)")
+
+
+def _extract_json_block(text: str) -> Optional[str]:
+    """Try to pull the first JSON object from a string."""
+    # Prefer fenced json code blocks
+    fenced = re.search(r"```json\s*({.*?})\s*```", text, flags=re.DOTALL | re.IGNORECASE)
+    if fenced:
+        return fenced.group(1)
+
+    match = re.search(r"\{[^{}]*\}", text, re.DOTALL)
+    if match:
+        return match.group()
+    return None
+
+
+def _fallback_parse(question: str) -> tuple[Optional[List[str]], Optional[str]]:
+    """
+    Heuristic extraction when LLM JSON parse fails:
+    - Tickers: uppercase 1-5 letters, deduped.
+    - Periods: Q# YYYY -> Q#-YYYY.
+    """
+    tickers: List[str] = []
+    for symbol in _TICKER_REGEX.findall(question.upper()):
+        # Skip common words that match the regex accidentally
+        if symbol in {"THE", "AND", "FOR", "WITH", "THIS", "THAT"}:
+            continue
+        tickers.append(symbol)
+
+    period_match = _PERIOD_REGEX.search(question)
+    period = None
+    if period_match:
+        period = f"Q{period_match.group(1)}-{period_match.group(2)}"
+
+    deduped_tickers = list(dict.fromkeys(tickers)) or None
+    return deduped_tickers, period
+
+
 class QueryParser:
     """Parses user queries to extract ticker symbols and time periods."""
 
@@ -79,13 +118,8 @@ class QueryParser:
 
         try:
             response = self._openai.chat(system_prompt=prompt, user_message=question)
-            
-            # Extract JSON from response (handle markdown code blocks)
-            json_match = re.search(r'\{[^{}]*\}', response, re.DOTALL)
-            if json_match:
-                response = json_match.group()
-            
-            data = json.loads(response)
+            json_block = _extract_json_block(response) or response
+            data = json.loads(json_block)
 
             tickers = data.get("tickers")
             period = data.get("period")
@@ -98,6 +132,21 @@ class QueryParser:
 
             # Resolve relative periods
             period = _resolve_relative_period(period)
+
+            # If the LLM gave us nothing, fall back to heuristics
+            if not tickers or not period:
+                fallback_tickers, fallback_period = _fallback_parse(question)
+                if not tickers:
+                    tickers = fallback_tickers
+                if not period:
+                    period = fallback_period
+
+            # If still missing, mark for clarification
+            if not tickers or not period:
+                needs_clarification = True
+                clarification_message = clarification_message or (
+                    "Please specify the company ticker and fiscal period (e.g., AMZN, Q3-2025)."
+                )
 
             return tickers, period, needs_clarification, clarification_message
 

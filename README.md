@@ -17,6 +17,7 @@ An intelligent LLM-powered chatbot that answers questions about company financia
 - 🏷️ **Line-Level Citations** — Every answer includes precise source references
 - 🤖 **Multi-Model Support** — Evaluate responses across Claude, GPT, Gemini, Llama, and more
 - 📊 **Built-in Evaluation Pipeline** — Compare model accuracy with Claude Opus as judge
+- 🛡️ **Guardrails & Telemetry** — Empty questions short-circuit with guidance, and responses include retrieval debug metadata
 
 ---
 
@@ -147,6 +148,14 @@ streamlit run frontend/streamlit_app.py
 ```
 
 The UI will open at `http://localhost:8501`
+
+### (Optional) One-command local run
+
+```bash
+python scripts/run_local.py
+```
+
+This loads `.env`, starts FastAPI on 8000 and Streamlit on 8501, and shuts both down together.
 
 ---
 
@@ -305,6 +314,9 @@ python scripts/run_eval.py --csv data/eval/questions_example.csv --models all
 
 # Evaluate specific models
 python scripts/run_eval.py --csv data/eval/questions_example.csv --models claude-sonnet-4.5,gpt-5.1
+
+# Quick regression (first N questions) and custom API base
+python scripts/run_eval.py --csv data/eval/questions_example.csv --models all --limit 5 --api-base http://localhost:8000
 ```
 
 ### Evaluation CSV Format
@@ -316,6 +328,7 @@ question,expected_answer,tickers,period
 ```
 
 Results are saved to `data/eval/results/` with detailed per-question and summary CSVs.
+The detailed CSV now includes `latency_ms`; the summary includes `avg_latency_ms`.
 
 ---
 

@@ -43,6 +43,7 @@ class ChatResponse(BaseModel):
     raw_context: Optional[List[dict[str, Any]]] = None
     model: Optional[str] = None  # Model used for this response
     usage: Optional[UsageInfo] = None  # Token usage and cost tracking
+    retrieval_debug: Optional[dict[str, Any]] = None  # Telemetry about retrieval (counts, thresholds)
 
 
 class ParseQueryRequest(BaseModel):

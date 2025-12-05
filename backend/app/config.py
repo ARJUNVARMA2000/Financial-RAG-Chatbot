@@ -34,7 +34,7 @@ class AppConfig(BaseModel):
 
 
 def get_settings() -> Settings:
-    return Settings(
+    settings = Settings(
         openai_api_key=os.environ.get("OPENAI_API_KEY", ""),
         openai_base_url=os.environ.get("OPENAI_BASE_URL") or None,
         openai_chat_model=os.environ.get("OPENAI_CHAT_MODEL", "gpt-4.1-mini"),
@@ -42,6 +42,20 @@ def get_settings() -> Settings:
         openrouter_api_key=os.environ.get("OPENROUTER_API_KEY", ""),
         openrouter_base_url=os.environ.get("OPENROUTER_BASE_URL", OPENROUTER_BASE_URL),
     )
+
+    if not settings.openai_api_key:
+        raise ValueError("OPENAI_API_KEY is required but missing. Add it to your .env file.")
+
+    # Ensure important directories exist to avoid runtime errors
+    for path in [
+        settings.data_dir,
+        settings.raw_dir,
+        settings.index_dir,
+        settings.chroma_persist_dir,
+    ]:
+        path.mkdir(parents=True, exist_ok=True)
+
+    return settings
 
 
 
