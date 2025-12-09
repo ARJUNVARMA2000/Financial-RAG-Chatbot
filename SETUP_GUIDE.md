@@ -98,6 +98,7 @@ OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
 - Replace `your_openai_api_key_here` with your actual OpenAI API key
 - Replace `your_openrouter_api_key_here` with your OpenRouter API key (if using multi-model evaluation)
 - The `.env` file is gitignored - your API keys will never be committed to the repository
+- The backend now fails fast if `OPENAI_API_KEY` is missing, so ensure it is set before running.
 
 ---
 
@@ -205,6 +206,16 @@ streamlit run frontend/streamlit_app.py
 
 The UI will automatically open in your browser at `http://localhost:8501`
 
+### One-command local run (optional)
+
+Instead of starting backend and frontend separately, you can:
+
+```bash
+python scripts/run_local.py
+```
+
+This loads `.env`, starts FastAPI on port 8000 and Streamlit on port 8501, and stops both on Ctrl+C.
+
 ---
 
 ## Step 8: Verify Everything Works
@@ -254,7 +265,7 @@ Once everything is set up and running:
 
 1. **Explore the API:** Visit `http://localhost:8000/docs` to try different endpoints
 2. **Add More Documents:** Place additional financial documents in `data/raw/<TICKER>/` and rebuild the index
-3. **Run Evaluation:** See the README's "Multi-Model Evaluation" section
+3. **Run Evaluation:** See the README's "Multi-Model Evaluation" section. `scripts/run_eval.py` now records per-question latency and supports `--limit N` for quick regressions.
 4. **Download SEC Filings:** Use `scripts/download_filings.py` to fetch filings automatically
 
 ---

@@ -16,45 +16,6 @@ from backend.app.services.llm_text_formatter import format_llm_response
 
 
 API_BASE = os.environ.get("FIN_RAG_API_BASE", "http://localhost:8000")
-
-def handle_question(question: str, top_k: int):
-    """
-    Process a question: parse it, search, and update session state with the answer.
-    This function handles UI feedback (status) and state updates.
-    """
-    # ... existing code ...
-    
-    try:
-        resp = requests.post(f"{API_BASE}/chat", json=payload, timeout=60)
-        resp.raise_for_status()
-        data = resp.json()
-        
-        # CRITICAL FIX: Format the answer immediately after receiving it
-        raw_answer = data.get("answer", "")
-        answer = format_llm_response(raw_answer)  # Clean the text
-        citations = data.get("citations", [])
-        
-        status.update(label="Complete!", state="complete", expanded=False)
-        
-    except Exception as exc:
-        status.update(label="Error", state="error", expanded=True)
-        answer = f"I encountered an error: {exc}"
-        citations = []
-
-    # Save formatted answer to session state
-    message_data = {
-        "role": "assistant",
-        "content": answer,  # Now properly formatted
-        "citations": citations,
-        "context_tickers": new_tickers if new_tickers else tickers_list,
-        "context_period": new_period if new_period else period_str,
-        "clarification_needed": parsed.get("needs_clarification"),
-        "clarification_msg": parsed.get("clarification_message"),
-    }
-    st.session_state.messages.append(message_data)
-    status_placeholder.empty()
-
-
 def _resolve_url(path_or_url: str) -> str:
     if path_or_url.startswith(("http://", "https://")):
         return path_or_url
@@ -316,7 +277,8 @@ def handle_question(question: str, top_k: int):
             resp.raise_for_status()
             data = resp.json()
             
-            answer = data.get("answer", "")
+            raw_answer = data.get("answer", "")
+            answer = format_llm_response(raw_answer)
             citations = data.get("citations", [])
             
             status.update(label="Complete!", state="complete", expanded=False)

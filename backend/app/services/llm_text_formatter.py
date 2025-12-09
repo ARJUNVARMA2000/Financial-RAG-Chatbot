@@ -13,6 +13,11 @@ def format_response_text(text: str) -> str:
     if not text:
         return text
     
+    # Step 0: Normalize compact financial suffixes (e.g., 2.1B -> 2.1 billion)
+    text = re.sub(r'(\d+\.?\d*)\s*[bB]\b', r'\1 billion', text)
+    text = re.sub(r'(\d+\.?\d*)\s*[mM]\b', r'\1 million', text)
+    text = re.sub(r'(\d+\.?\d*)\s*[tT]\b', r'\1 trillion', text)
+
     # Step 1: Fix numbers followed immediately by "billion/million/trillion"
     text = re.sub(r'(\d+\.?\d*)billion', r'\1 billion', text, flags=re.IGNORECASE)
     text = re.sub(r'(\d+\.?\d*)million', r'\1 million', text, flags=re.IGNORECASE)
@@ -66,6 +71,9 @@ def format_response_text(text: str) -> str:
     text = re.sub(r'\n +', '\n', text)
     text = re.sub(r' +\n', '\n', text)
     text = re.sub(r'\n{3,}', '\n\n', text)
+
+    # Step 14: Normalize bullet spacing
+    text = re.sub(r'\n-\s*', '\n- ', text)
     
     return text.strip()
 

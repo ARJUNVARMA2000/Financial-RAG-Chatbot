@@ -13,6 +13,8 @@ from .citation import build_citations
 from .ranking import rerank_by_distance
 from .retriever import Retriever
 
+MIN_SIMILARITY = 0.35  # drop low-signal chunks (cosine distance -> similarity)
+
 
 SYSTEM_PROMPT = """You are a financial analysis assistant.
 You are given context from official company documents (filings, press releases, and earnings call transcripts).
@@ -74,6 +76,7 @@ class RAGService:
                 k=100,  # Get enough to see all periods
                 tickers=[ticker.upper()],
                 period=None,
+                allow_blank_query=True,
             )
             
             print(f"🔍 Retriever returned {len(chunks_with_scores)} chunks")
@@ -112,6 +115,7 @@ class RAGService:
                 k=1000,  # Get many chunks
                 tickers=None,
                 period=None,
+                allow_blank_query=True,
             )
             
             ticker_periods: Dict[str, set] = {}
@@ -217,12 +221,24 @@ class RAGService:
         return msg
 
     def answer(self, request: ChatRequest) -> ChatResponse:
+        # Basic guardrail for empty/whitespace-only questions
+        if not request.question.strip():
+            return ChatResponse(
+                answer="Please provide a financial question so I can search the filings and transcripts.",
+                citations=[],
+                raw_context=None,
+                model=None,
+                usage=None,
+                retrieval_debug={"skipped": True, "reason": "empty_question"},
+            )
+
         # Retrieve relevant chunks
         chunks_with_scores = self._retriever.retrieve(
             query=request.question,
             k=request.top_k,
             tickers=request.tickers,
             period=request.period,
+            min_similarity=MIN_SIMILARITY,
         )
         
         # ✅ CHECK IF NO RESULTS FOUND
@@ -239,6 +255,17 @@ class RAGService:
                 raw_context=None,
                 model=None,
                 usage=None,
+                retrieval_debug={
+                    "query_length": len(request.question),
+                    "requested_top_k": request.top_k,
+                    "filters": {
+                        "tickers": request.tickers,
+                        "period": request.period,
+                    },
+                    "retrieved": 0,
+                    "filtered": 0,
+                    "min_similarity_threshold": MIN_SIMILARITY,
+                },
             )
         
         # Continue with normal RAG flow
@@ -288,6 +315,19 @@ class RAGService:
             raw_context=raw_context,
             model=model_used,
             usage=usage_info,
+            retrieval_debug={
+                "query_length": len(request.question),
+                "requested_top_k": request.top_k,
+                "filters": {
+                    "tickers": request.tickers,
+                    "period": request.period,
+                },
+                "retrieved": len(chunks_with_scores),
+                "filtered": len(chunks_with_scores),
+                "min_similarity_threshold": MIN_SIMILARITY,
+                "min_distance": min(score for _, score in ranked) if ranked else None,
+                "max_distance": max(score for _, score in ranked) if ranked else None,
+            },
         )
 
 
