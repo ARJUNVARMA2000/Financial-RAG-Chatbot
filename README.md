@@ -3,7 +3,6 @@
 LLM-powered RAG chatbot that answers company financial questions from SEC filings with line-level citations. No hallucinations, no "I think Q3 revenue was…" — every claim cites the source paragraph.
 
 - **Live demo:** https://finrag-frontend-7pj7nolpla-uc.a.run.app/
-- **Portfolio:** https://arjun-varma.com/
 - **Built at:** Columbia University · Nov 2025 – Dec 2025
 
 ## Problem
