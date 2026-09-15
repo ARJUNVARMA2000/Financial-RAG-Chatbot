@@ -79,3 +79,7 @@ streamlit run app/streamlit_app.py
 ## License
 
 MIT
+
+### Gemini evaluation models
+
+The `gemini-3-pro` alias now resolves to OpenRouter `google/gemini-3.1-pro-preview`, replacing the unavailable Gemini 3 Pro endpoint. Saved evaluation results retain their original model labels and scores. The `gemini-3-flash` mapping is unchanged and remains available in the OpenRouter catalog.
